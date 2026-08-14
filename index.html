@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía: Desarrollo del Adolescente</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --card:#ffffff; --text:#1f2937; --sub:#6b7280;
+    --accent1:#ef4444; --accent2:#f59e0b; --accent3:#10b981;
+    --border:#e5e7eb; --header:#111827; --btn:#2563eb; --btnhover:#1d4ed8;
+    --wrong:#ef4444; --right:#10b981; --shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  [data-theme="dark"]{
+    --bg:#0f1115; --card:#1a1d24; --text:#e5e7eb; --sub:#9ca3af;
+    --border:#2a2e37; --header:#0b0d11; --btn:#3b82f6; --btnhover:#2563eb;
+    --shadow: 0 2px 10px rgba(0,0,0,0.4);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s;}
+  header{position:sticky;top:0;z-index:100;background:var(--header);color:#fff;padding:12px 16px;box-shadow:var(--shadow);}
+  .headtop{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  header h1{font-size:1.1rem;margin:0;}
+  #themeToggle{background:none;border:1px solid #fff;color:#fff;border-radius:20px;padding:6px 14px;cursor:pointer;font-size:.85rem;}
+  #themeToggle:hover{background:rgba(255,255,255,.15);}
+  .navblocks{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .navblocks button{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:5px 10px;font-size:.72rem;cursor:pointer;}
+  .navblocks button:hover{background:rgba(255,255,255,.25);}
+  .navblocks button.active{background:#2563eb;border-color:#2563eb;}
+  .progresswrap{height:8px;background:#2a2e37;border-radius:4px;overflow:hidden;margin-top:10px;}
+  #progressbar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3));transition:width .3s;}
+  main{max-width:700px;margin:0 auto;padding:20px 16px 60px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow);}
+  #blockLabel{font-size:.8rem;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  #qCounter{font-size:.85rem;color:var(--sub);margin-bottom:10px;}
+  #questionText{font-size:1.15rem;margin:0 0 20px;line-height:1.4;}
+  .option{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer;font-size:.95rem;color:var(--text);transition:all .15s;}
+  .option:hover{border-color:var(--btn);}
+  .option.correct{background:rgba(16,185,129,.15);border-color:var(--right);}
+  .option.wrong{background:rgba(239,68,68,.15);border-color:var(--wrong);}
+  .option:disabled{cursor:default;}
+  #feedback{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:.92rem;display:none;}
+  #feedback.show{display:block;}
+  #feedback.correct{background:rgba(16,185,129,.12);border:1px solid var(--right);}
+  #feedback.wrong{background:rgba(239,68,68,.12);border:1px solid var(--wrong);}
+  .navrow{display:flex;justify-content:space-between;align-items:center;margin-top:18px;}
+  #nextBtn{background:var(--btn);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:.95rem;cursor:pointer;}
+  #nextBtn:hover{background:var(--btnhover);}
+  #nextBtn:disabled{opacity:.4;cursor:not-allowed;}
+  #scoreLive{font-size:.85rem;color:var(--sub);}
+  #restartBtn{background:none;border:1px solid var(--sub);color:var(--sub);border-radius:10px;padding:6px 12px;font-size:.8rem;cursor:pointer;}
+  #restartBtn:hover{border-color:var(--wrong);color:var(--wrong);}
+  .modalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;}
+  .modalOverlay.show{display:flex;}
+  .modalBox{background:var(--card);border-radius:14px;padding:24px;max-width:340px;text-align:center;box-shadow:var(--shadow);}
+  .modalBox p{margin:0 0 18px;}
+  .modalBtns{display:flex;gap:10px;justify-content:center;}
+  .modalBtns button{border-radius:8px;padding:8px 16px;border:none;cursor:pointer;font-size:.9rem;}
+  .confirmYes{background:var(--wrong);color:#fff;}
+  .confirmNo{background:var(--border);color:var(--text);}
+  #resultsScreen{display:none;text-align:center;}
+  #resultsScreen h2{font-size:1.6rem;}
+  #resultsScreen .bigscore{font-size:2.5rem;font-weight:bold;margin:10px 0;}
+  .blockBreak{text-align:left;margin-top:20px;}
+  .blockBreak div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.88rem;}
+  footer{text-align:center;padding:20px;color:var(--sub);font-size:.75rem;}
+</style>
+</head>
+<body data-theme="light">
+<header>
+  <div class="headtop">
+    <h1>🧠 Guía: Desarrollo del Adolescente</h1>
+    <button id="themeToggle">🌙 Modo oscuro</button>
+  </div>
+  <div class="navblocks" id="navBlocks"></div>
+  <div class="progresswrap"><div id="progressbar"></div></div>
+</header>
+
+<main>
+  <div class="card" id="quizCard">
+    <div id="blockLabel"></div>
+    <div id="qCounter"></div>
+    <p id="questionText"></p>
+    <div id="optionsContainer"></div>
+    <div id="feedback"></div>
+    <div class="navrow">
+      <span id="scoreLive"></span>
+      <button id="nextBtn" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+  <div class="card" id="resultsScreen">
+    <h2>¡Guía completada! 🎉</h2>
+    <div class="bigscore" id="finalScore"></div>
+    <p id="finalMsg"></p>
+    <div class="blockBreak" id="blockBreakdown"></div>
+    <div style="margin-top:20px;">
+      <button id="restartBtn2" style="background:var(--btn);color:#fff;border:none;border-radius:10px;padding:10px 22px;cursor:pointer;">Reiniciar guía</button>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:16px;">
+    <button id="restartBtn">↺ Reiniciar</button>
+  </div>
+</main>
+
+<footer>A. A. DURAND- TODOS LOS DERECHOS RESERVADOS</footer>
+
+<div class="modalOverlay" id="confirmModal">
+  <div class="modalBox">
+    <p>¿Seguro que quieres reiniciar la guía? Se perderá tu progreso actual.</p>
+    <div class="modalBtns">
+      <button class="confirmYes" id="confirmYes">Sí, reiniciar</button>
+      <button class="confirmNo" id="confirmNo">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "guia_desarrollo_adolescente_v1";
+
+const questions = [
+// BLOQUE 1: Adolescencia y Pubertad
+{block:"Adolescencia y Pubertad", q:"¿Qué caracteriza a la Adolescencia Temprana (10-13 años)?", opts:["Madurez física y emocional total","Transición de niño a adolescente, cambios de pubertad e inseguridad del cuerpo","Finaliza el desarrollo físico por completo","Consolidación total de la identidad vocacional"], correct:1, es:"Es la etapa de transición donde inician los cambios de la pubertad y la inseguridad respecto al propio cuerpo y la privacidad."},
+{block:"Adolescencia y Pubertad", q:"En la Adolescencia Media (14-17 años), ¿qué ocurre principalmente?", opts:["Se busca un integrado sentido del yo por primera vez","Desarrollo de identidad más definida, mayor razonamiento y búsqueda de nuevas experiencias","Regresión a etapas infantiles","Pérdida de la capacidad de razonamiento abstracto"], correct:1, es:"En esta etapa la identidad se define más, aumenta la capacidad de razonamiento y se buscan nuevas experiencias."},
+{block:"Adolescencia y Pubertad", q:"¿Qué distingue a la Adolescencia Tardía (18-21 años)?", opts:["Inicio de la pubertad","Mayor madurez física y emocional, finaliza el desarrollo físico y se asumen responsabilidades", "Aparición de la menarquia","Inicio de la adrenarquia"], correct:1, es:"Hay mayor madurez física y emocional, se finaliza el desarrollo físico y se asumen responsabilidades y toma de decisiones."},
+{block:"Adolescencia y Pubertad", q:"¿Qué es la pubertad, según lo revisado?", opts:["Un rasgo exclusivo de la adolescencia tardía","Término que marca el final de la niñez, con rápido crecimiento de estatura y peso","Un trastorno alimenticio","Sinónimo de identidad sexual"], correct:1, es:"Es el término que marca el final de la niñez, caracterizado por un rápido crecimiento de estatura y peso, y cambios en las proporciones corporales."},
+{block:"Adolescencia y Pubertad", q:"¿Aproximadamente a qué edad comienza la pubertad en niñas y niños respectivamente?", opts:["10 años y 12 años","6 años y 7 años","8 años y 9 años","12 años y 14 años"], correct:2, es:"Este proceso comienza a partir de los 8 años en niñas y 9 años en niños."},
+{block:"Adolescencia y Pubertad", q:"¿Cuánto suele durar el proceso de pubertad?", opts:["1 a 2 años","3 a 4 años","5 a 6 años","8 a 10 años"], correct:1, es:"La pubertad dura de 3 a 4 años aproximadamente."},
+
+// BLOQUE 2: Personalidad y Autoestima
+{block:"Personalidad y Autoestima", q:"¿Cómo se define la personalidad?", opts:["Un rasgo fijo desde el nacimiento","Patrón de pensamientos, sentimientos y comportamiento característico de una persona","Solo el comportamiento visible ante otros","Una etapa exclusiva de la pubertad"], correct:1, es:"La personalidad es el patrón de pensamientos, sentimientos y comportamiento característico de una persona."},
+{block:"Personalidad y Autoestima", q:"¿Qué factores influyen en el desarrollo de la personalidad a lo largo de la vida?", opts:["Solo factores genéticos","Factores genéticos, ambientales y experiencias sociales","Únicamente la educación escolar","Solo la influencia de los amigos"], correct:1, es:"La personalidad se desarrolla a lo largo de la vida por factores genéticos, ambientales y experiencias sociales."},
+{block:"Personalidad y Autoestima", q:"¿Qué es la autoestima?", opts:["La capacidad de razonar de forma abstracta","La valoración que una persona tiene de sí misma","Un componente exclusivo de la identidad sexual","Un trastorno alimenticio"], correct:1, es:"La autoestima es la valoración que una persona tiene de sí misma."},
+{block:"Personalidad y Autoestima", q:"¿Qué componente de la autoestima se define como reconocer y comprender fortalezas, debilidades y emociones?", opts:["Autoaceptación","Autoconfianza","Autoconocimiento","Autorrespeto"], correct:2, es:"El autoconocimiento es reconocer y comprender las propias fortalezas, debilidades y emociones."},
+{block:"Personalidad y Autoestima", q:"¿A qué componente de la autoestima corresponde 'aceptarse uno mismo tal como es, sin juicios'?", opts:["Autoconfianza","Autoaceptación","Autorrespeto","Autoconocimiento"], correct:1, es:"La autoaceptación consiste en aceptarse uno mismo tal como es, sin juicios."},
+{block:"Personalidad y Autoestima", q:"¿Qué componente de la autoestima implica tratarse a uno mismo con dignidad y cuidar la salud física y mental?", opts:["Autoconocimiento","Autoconfianza","Autoaceptación","Autorrespeto"], correct:3, es:"El autorrespeto es la capacidad de tratarse a uno mismo con dignidad, cuidando la salud física y mental."},
+
+// BLOQUE 3: Identidad y Sexualidad
+{block:"Identidad y Sexualidad", q:"¿Cómo se describe la identidad de forma general?", opts:["Un concepto complejo que incluye diversas aristas que se arman de forma dinámica","Solo un rasgo biológico fijo","Únicamente el sexo con el que se nace","Un sinónimo de personalidad"], correct:0, es:"La identidad es un concepto complejo que incluye diversas aristas, las cuales se arman de forma dinámica para dar como resultado lo que somos como persona y lo que compartimos en grupo."},
+{block:"Identidad y Sexualidad", q:"¿Qué es la identidad sexual?", opts:["Las características genitales con las que se nace","Cómo el adolescente se reconoce y se identifica respecto a su sexualidad","Un sinónimo de orientación sexual","La atracción exclusiva hacia el sexo opuesto"], correct:1, es:"La identidad sexual es cómo el adolescente se reconoce y se identifica respecto a su sexualidad."},
+{block:"Identidad y Sexualidad", q:"¿Qué caracteriza al comportamiento sexual?", opts:["Se limita exclusivamente a fines reproductivos","Se determina por aspectos que trascienden las dimensiones reproductivas y no se separa de cómo el ser humano vive su sexualidad","Es igual en todas las culturas sin influencias externas","Depende únicamente de la genética"], correct:1, es:"El comportamiento sexual se determina por una serie de aspectos que trascienden dimensiones reproductivas; no se separa de su comportamiento como ser humano ni de su manera de vivir, con posibles influencias y ámbito social."},
+{block:"Identidad y Sexualidad", q:"¿A qué se refiere el sexo biológico?", opts:["A la vivencia interna y personal del género","A características biológicas como genitales, cromosomas, gónadas o niveles hormonales","A la atracción sexual hacia otras personas","Al autoconcepto y apreciación de sí mismo"], correct:1, es:"El sexo biológico se refiere a características biológicas como genitales, cromosomas, gónadas o niveles hormonales."},
+{block:"Identidad y Sexualidad", q:"¿Qué es la orientación sexual?", opts:["Las características genitales de nacimiento","El aspecto por el cual una persona se siente atraída sexualmente hacia personas del sexo opuesto, del mismo o ambos","Un sinónimo de identidad de género","La primera eyaculación"], correct:1, es:"La orientación sexual es el aspecto por el cual una persona se siente atraída sexualmente hacia personas del sexo opuesto, del mismo o ambos."},
+
+// BLOQUE 4: Erikson y Elkind
+{block:"Erikson y Elkind", q:"¿Cuántas etapas psicosociales propone la Teoría Psicosocial de Erikson?", opts:["5 etapas","6 etapas","8 etapas","10 etapas"], correct:2, es:"Erikson propone 8 etapas psicosociales en su Teoría Psicosocial."},
+{block:"Erikson y Elkind", q:"¿Qué implica la etapa de 'Identidad vs. Confusión de roles' de Erikson?", opts:["La búsqueda de un sentido coherente del yo integrado, con roles y valores","El desarrollo exclusivo del pensamiento abstracto","La separación total de los padres","La primera menstruación"], correct:0, es:"Esta etapa implica la búsqueda de un sentido coherente del 'yo' integrado, con roles y valores."},
+{block:"Erikson y Elkind", q:"¿Cómo se define la 'búsqueda del yo'?", opts:["El proceso de construir la propia identidad a partir de experiencias, valores, relaciones y decisiones personales","La primera eyaculación con espermatozoides","Un trastorno alimenticio","La activación de las glándulas suprarrenales"], correct:0, es:"Es el proceso de construir la propia identidad a partir de las experiencias, valores, relaciones y decisiones personales."},
+{block:"Erikson y Elkind", q:"¿Cómo define Elkind el egocentrismo adolescente?", opts:["La incapacidad de pensar de forma abstracta","La conciencia exagerada de sí mismos, creyendo despertar en los demás el mismo interés que sienten por ellos mismos, siendo únicos e invulnerables","La apropiación total de las reglas sociales","El apego exclusivo hacia la familia"], correct:1, es:"Elkind define el egocentrismo como la conciencia exagerada de sí mismos, reflejando el convencimiento de que despiertan interés en los demás igual al que sienten por ellos mismos, sintiéndose únicos e invulnerables."},
+{block:"Erikson y Elkind", q:"¿Cuál de las siguientes frases se asocia a la 'fábula personal' de Elkind?", opts:["'Son especiales, no siguen reglas'","'La familia es la base social'","'El comportamiento sexual trasciende lo reproductivo'","'La identidad se arma de forma dinámica'"], correct:0, es:"La fábula personal incluye ideas como 'son especiales, no siguen reglas', vivencias incomparables con nadie y la sensación de ser invulnerables."},
+
+// BLOQUE 5: Trastornos Alimenticios
+{block:"Trastornos Alimenticios", q:"Según Papalia y Martorell (2021), ¿por qué se dan los trastornos alimenticios?", opts:["Únicamente por factores genéticos","Por afectación de la esfera biológica, por autoestima dañada en el área física","Exclusivamente por presión familiar","Por un exceso de autoconfianza"], correct:1, es:"Se dan por afectación de la esfera biológica, por autoestima dañada en el área física."},
+{block:"Trastornos Alimenticios", q:"¿Qué caracteriza a la bulimia según lo revisado?", opts:["Restricción extrema de comida sin atracones","Uso de laxantes, diuréticos y enemas para evitar el aumento de peso, con atracones, pesarse constantemente, vómito y caries","Autolesión deliberada sin intención suicida","Exclusivamente factores genéticos"], correct:1, es:"La bulimia implica laxantes, diuréticos y enemas para evitar el aumento de peso, atracones, pesarse constantemente, vómito y caries."},
+{block:"Trastornos Alimenticios", q:"¿Qué caracteriza a la anorexia según lo revisado?", opts:["Uso de laxantes, diuréticos, enemas, atracones, mayor ejercicio y restricción de comida","Autolesión con alta tensión emocional","Obesidad de origen exclusivamente genético","Vómito sin restricción alimentaria"], correct:0, es:"La anorexia implica laxantes, diuréticos y enemas, atracones, mayor ejercicio y restringir la comida."},
+{block:"Trastornos Alimenticios", q:"¿Cómo se describe el 'cutting' en el contexto de trastornos revisados?", opts:["Un tipo de dieta restrictiva","Autolesión deliberada sin intención suicida, por alta tensión emocional","Un componente sexual secundario","Sinónimo de obesidad"], correct:1, es:"El cutting es una autolesión deliberada sin intención suicida, asociada a alta tensión emocional."},
+
+// BLOQUE 6: Características Sexuales
+{block:"Características Sexuales", q:"¿Cómo se definen las características sexuales primarias?", opts:["Cambios físicos que aparecen únicamente en la adultez","La anatomía reproductiva con la que cada individuo nace, siendo fundamentales para la reproducción","Rasgos exclusivos de la personalidad","Los vínculos amorosos en la adolescencia"], correct:1, es:"Se refieren a la anatomía reproductiva con la que cada individuo nace, siendo fundamentales para la reproducción."},
+{block:"Características Sexuales", q:"¿Cuáles son los componentes femeninos de las características sexuales primarias?", opts:["Testículos, conductos deferentes y próstata","Ovarios, trompas de Falopio, útero y vagina","Glándulas suprarrenales","Vello y olor corporal"], correct:1, es:"Los componentes femeninos incluyen ovarios, trompas de Falopio, útero y vagina, esenciales para la gestación."},
+{block:"Características Sexuales", q:"¿Cuáles son los componentes masculinos de las características sexuales primarias?", opts:["Ovarios y útero","Testículos, conductos deferentes, próstata y vesículas seminales","Glándulas suprarrenales exclusivamente","Vello corporal y voz grave"], correct:1, es:"Comprenden testículos, conductos deferentes, próstata y vesículas seminales, vitales para la producción y transporte de gametos."},
+{block:"Características Sexuales", q:"¿Cómo se definen las características sexuales secundarias?", opts:["La anatomía reproductiva de nacimiento","Cambios físicos que se manifiestan durante la pubertad, indicando madurez sexual en transformaciones corporales","Los ovarios y testículos exclusivamente","Un tipo de trastorno alimenticio"], correct:1, es:"Son cambios físicos que se manifiestan durante la pubertad, indicando madurez sexual mediante transformaciones corporales."},
+
+// BLOQUE 7: Autores y Desarrollo Moral
+{block:"Autores y Desarrollo Moral", q:"¿Qué aporta Jean Piaget al desarrollo del adolescente?", opts:["El concepto de fábula personal","El desarrollo del pensamiento abstracto e hipotético, permitiendo analizar problemas abstractos y tomar decisiones complejas","Las 8 etapas psicosociales","Los niveles de desarrollo moral"], correct:1, es:"Piaget aporta el desarrollo del pensamiento abstracto e hipotético, que permite analizar problemas abstractos y tomar decisiones complejas."},
+{block:"Autores y Desarrollo Moral", q:"Según Sigmund Freud, ¿qué caracteriza esta etapa del desarrollo?", opts:["Cambios psicológicos internos, reparación de impulsos sexuales, pulsiones y conflictos emocionales junto con la separación de los padres","El desarrollo exclusivo del pensamiento lógico","La aplicación de reglas morales postconvencionales","La activación de los ovarios y testículos"], correct:0, es:"Freud señala cambios psicológicos internos, reparación de impulsos sexuales, pulsiones y conflictos emocionales, junto con la separación de los padres."},
+{block:"Autores y Desarrollo Moral", q:"Según Kohlberg, ¿qué caracteriza el nivel PRECONVENCIONAL?", opts:["La aplicación consciente de las reglas","La apropiación de las reglas sociales","La persona basa sus decisiones morales en las consecuencias de sus acciones, como evitar castigos","El desarrollo del pensamiento hipotético"], correct:2, es:"En el nivel preconvencional, la persona basa sus decisiones morales en las consecuencias de sus acciones, como evitar castigos."},
+{block:"Autores y Desarrollo Moral", q:"Según Kohlberg, ¿qué caracteriza el nivel CONVENCIONAL?", opts:["Apropiación de las reglas","Evitar castigos como base de la decisión moral","Aplicación de las reglas de forma autónoma","Ausencia total de normas morales"], correct:0, es:"El nivel convencional se caracteriza por la apropiación de las reglas."},
+{block:"Autores y Desarrollo Moral", q:"Según Kohlberg, ¿qué caracteriza el nivel POSTCONVENCIONAL?", opts:["Evitar castigos","Apropiación de las reglas sociales","Aplicación de las reglas","Ausencia de razonamiento moral"], correct:2, es:"El nivel postconvencional se caracteriza por la aplicación de las reglas."},
+{block:"Autores y Desarrollo Moral", q:"¿Cómo se define el término 'pares' en el desarrollo del adolescente?", opts:["Los padres y hermanos exclusivamente","Movilidad hacia fuera de la familia, empezando por empatía, intereses/necesidades en común, confianza y seguridad que se vuelve hermandad","Los profesores de la escuela","Un componente sexual primario"], correct:1, es:"Pares se refiere hacia la movilidad hacia fuera de lo familiar; empieza por una empatía, intereses/necesidades en común, confianza y seguridad que se vuelve hermandad."},
+
+// BLOQUE 8: Influencia Social y Riesgos
+{block:"Influencia Social y Riesgos", q:"¿Qué papel juega la familia como influencia social?", opts:["Aplicar reglas y definir límites entre pares","Transmitir valores, tradiciones y costumbres; es la base social","Reforzar valores mediante el ámbito escolar","Determinar la orientación sexual"], correct:1, es:"La familia transmite valores, tradiciones y costumbres, siendo la base social."},
+{block:"Influencia Social y Riesgos", q:"¿Qué papel juegan los amigos como influencia social, y qué riesgo implica?", opts:["Transmitir valores familiares; sin riesgos asociados","Aplicar reglas/normas y definir límites y grupos; riesgo de presión social y situaciones de riesgo como violencia o retos","Reforzar conocimientos académicos exclusivamente","Determinar el desarrollo vocacional"], correct:1, es:"Los amigos permiten aplicar reglas/normas y definir límites y grupos; el riesgo es la presión social y situaciones de riesgo (violencia, retos, etc.)."},
+{block:"Influencia Social y Riesgos", q:"¿Qué impacto tiene la escuela como influencia social?", opts:["Refuerza valores, transmite conocimientos y habilidades, impactando el desarrollo del perfil vocacional y la elección de carrera","Es la base social principal del individuo","Define exclusivamente la identidad sexual","Provoca los trastornos alimenticios"], correct:0, es:"La escuela refuerza valores, transmite conocimientos y habilidades, con impacto en el desarrollo de perfil vocacional y elección de carrera."},
+{block:"Influencia Social y Riesgos", q:"¿Qué son las ETS?", opts:["Etapas del desarrollo psicosexual","Infecciones que se transmiten principalmente por relaciones sin protección","Un tipo de trastorno alimenticio","Características sexuales secundarias"], correct:1, es:"Las ETS son infecciones que se transmiten principalmente por relaciones sin protección."},
+{block:"Influencia Social y Riesgos", q:"¿Qué riesgos presenta el embarazo adolescente (entre 10 y 19 años)?", opts:["Ningún riesgo si hay apoyo familiar","Riesgos físicos, emocionales y sociales, ya que el cuerpo de la joven aún no ha madurado por completo","Solo riesgos económicos","Riesgos exclusivamente psicológicos leves"], correct:1, es:"El embarazo adolescente presenta riesgos físicos, emocionales y sociales, pues el cuerpo de la joven no madura completamente, lo que puede traer enfermedades, aborto o incluso la muerte."},
+
+// BLOQUE 9: Cambios Físicos en Adolescentes
+{block:"Cambios Físicos", q:"¿Qué es la adrenarquia?", opts:["La primera menstruación","Inicio de la actividad de las glándulas suprarrenales, provocando aparición de vello y olor corporal","La activación de ovarios y testículos","La primera eyaculación"], correct:1, es:"La adrenarquia es el inicio de la actividad de las glándulas suprarrenales, provocando la aparición de vello y olor corporal."},
+{block:"Cambios Físicos", q:"¿Qué es la gonadarquia?", opts:["El inicio de la actividad suprarrenal","La activación de los ovarios y testículos, que producen hormonas sexuales y permiten el desarrollo de características sexuales","La primera menstruación","La autolesión deliberada"], correct:1, es:"La gonadarquia es la activación de los ovarios y testículos, que producen hormonas sexuales y permiten el desarrollo de características sexuales."},
+{block:"Cambios Físicos", q:"¿Qué es la menarquia?", opts:["La primera eyaculación con espermatozoides","La primera menstruación, señal de maduración reproductiva de la adolescente","El inicio de la actividad suprarrenal","La activación hormonal de los testículos"], correct:1, es:"La menarquia es la primera menstruación, señal de maduración reproductiva de la adolescente."},
+{block:"Cambios Físicos", q:"¿Qué es la espermarquia?", opts:["La primera menstruación","La activación de las glándulas suprarrenales","La primera eyaculación con espermatozoides, indicando maduración reproductiva masculina","El desarrollo de vello corporal"], correct:2, es:"La espermarquia es la primera eyaculación con espermatozoides, indicando la maduración reproductiva masculina."},
+
+// BLOQUE 10: Factor Erótico-Afectivo
+{block:"Factor Erótico-Afectivo", q:"¿Qué elementos se incluyen dentro del Factor Erótico-Afectivo?", opts:["Solo la pubertad y la menarquia","Exploración de la sexualidad, vínculos sociales, siglo XX y preferencia genética","Únicamente los trastornos alimenticios","Solo las etapas psicosexuales de Freud"], correct:1, es:"El factor erótico-afectivo abarca la exploración de la sexualidad, los vínculos sociales, referencias al siglo XX y la preferencia genética."},
+{block:"Factor Erótico-Afectivo", q:"Según las etapas psicosexuales revisadas, ¿en qué rango de edad se ubica la etapa fálica?", opts:["0-1 año","1-3 años","3-6 años","6-11 años"], correct:2, es:"La etapa fálica se ubica entre los 3 y 6 años, según el esquema revisado (oral 0-1, anal 1-3, fálica 3-6, latencia 6-11, genital 12+)."},
+{block:"Factor Erótico-Afectivo", q:"¿Cuál es la primera etapa dentro del proceso de 'vínculos sociales → vínculos amorosos'?", opts:["Vínculo y atracción por el otro","Apego hacia un amigo","Crecimiento de sí mismo sobre emociones, físico y social","Consolidación"], correct:2, es:"La primera etapa es el crecimiento de sí mismo sobre emociones, aspecto físico y social; después viene el apego hacia un amigo y finalmente el vínculo y atracción por el otro."},
+{block:"Factor Erótico-Afectivo", q:"¿Cuál es el orden correcto de las Etapas del Amor revisadas?", opts:["Conflicto, enamoramiento, madurez, consolidación, aceptación","Enamoramiento, consolidación, conflicto, aceptación, madurez","Madurez, aceptación, conflicto, consolidación, enamoramiento","Aceptación, conflicto, enamoramiento, madurez, consolidación"], correct:1, es:"El orden es: 1. enamoramiento, 2. consolidación, 3. conflicto, 4. aceptación, 5. madurez."},
+{block:"Factor Erótico-Afectivo", q:"Según la investigación mencionada del cromosoma Xq28 (1993), ¿qué se relaciona con la orientación sexual y qué factores se asocian?", opts:["Solo la educación recibida en la familia","Una posible relación genética entre orientación sexual y homosexualidad, asociada a mayor número de hermanas mayores y feromonas relacionadas con el hipotálamo y sudor","Exclusivamente el ambiente escolar","La actividad de las glándulas suprarrenales"], correct:1, es:"La investigación de 1993 sobre el cromosoma Xq28 encontró una posible relación genética entre orientación sexual y homosexualidad, asociándola con mayor número de hermanas mayores y feromonas relacionadas con el hipotálamo y el sudor."}
+];
+
+// map correct option letter position to 0..3 per instructions distribution already embedded above via 'correct'
+
+let currentIndex = 0;
+let answered = false;
+let score = 0;
+let blockScores = {};
+let blockTotals = {};
+let answeredOption = null; // opción elegida en la pregunta actual (null si no se ha respondido)
+
+questions.forEach(q=>{
+  blockTotals[q.block] = (blockTotals[q.block]||0)+1;
+});
+
+const blockNames = [...new Set(questions.map(q=>q.block))];
+
+// Capa de almacenamiento: usa window.storage si está disponible (vista previa de Claude.ai),
+// y si no, usa localStorage del navegador (cuando el archivo se abre/descarga directamente).
+async function storageGet(key){
+  if(typeof window.storage !== 'undefined' && window.storage){
+    try{
+      const r = await window.storage.get(key, false);
+      return r ? r.value : null;
+    }catch(e){ return null; }
+  } else {
+    try{ return localStorage.getItem(key); }catch(e){ return null; }
+  }
+}
+async function storageSet(key, value){
+  if(typeof window.storage !== 'undefined' && window.storage){
+    try{ await window.storage.set(key, value, false); }catch(e){ console.error(e); }
+  } else {
+    try{ localStorage.setItem(key, value); }catch(e){ console.error(e); }
+  }
+}
+async function storageDelete(key){
+  if(typeof window.storage !== 'undefined' && window.storage){
+    try{ await window.storage.delete(key, false); }catch(e){}
+  } else {
+    try{ localStorage.removeItem(key); }catch(e){}
+  }
+}
+
+async function loadState(){
+  try{
+    const raw = await storageGet(STORAGE_KEY);
+    if(raw){
+      const s = JSON.parse(raw);
+      currentIndex = s.currentIndex||0;
+      score = s.score||0;
+      blockScores = s.blockScores||{};
+      answeredOption = (typeof s.answeredOption === 'number') ? s.answeredOption : null;
+    }
+  }catch(e){
+    // no hay estado guardado aún
+  }
+}
+async function saveState(){
+  try{
+    await storageSet(STORAGE_KEY, JSON.stringify({currentIndex, score, blockScores, answeredOption}));
+  }catch(e){
+    console.error('No se pudo guardar el progreso', e);
+  }
+}
+
+function buildNav(){
+  const nav = document.getElementById('navBlocks');
+  nav.innerHTML='';
+  blockNames.forEach(name=>{
+    const btn = document.createElement('button');
+    btn.textContent = name;
+    btn.onclick = ()=>{
+      const idx = questions.findIndex(q=>q.block===name);
+      if(idx>=0){ currentIndex = idx; answered=false; saveState(); renderQuestion(); }
+    };
+    nav.appendChild(btn);
+  });
+}
+function updateNavActive(){
+  const nav = document.getElementById('navBlocks');
+  const currentBlock = questions[currentIndex].block;
+  [...nav.children].forEach(btn=>{
+    btn.classList.toggle('active', btn.textContent===currentBlock);
+  });
+}
+
+function renderQuestion(){
+  if(currentIndex >= questions.length){
+    showResults();
+    return;
+  }
+  const q = questions[currentIndex];
+  document.getElementById('quizCard').style.display='block';
+  document.getElementById('resultsScreen').style.display='none';
+  document.getElementById('blockLabel').textContent = q.block;
+  document.getElementById('qCounter').textContent = `Pregunta ${currentIndex+1} de ${questions.length}`;
+  document.getElementById('questionText').textContent = q.q;
+  const optsContainer = document.getElementById('optionsContainer');
+  optsContainer.innerHTML='';
+  const letters=['A','B','C','D'];
+  q.opts.forEach((opt,i)=>{
+    const b = document.createElement('button');
+    b.className='option';
+    b.textContent = `${letters[i]}. ${opt}`;
+    b.onclick = ()=>selectOption(i);
+    optsContainer.appendChild(b);
+  });
+  document.getElementById('feedback').className='';
+  document.getElementById('feedback').textContent='';
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('scoreLive').textContent = `Aciertos: ${score}/${currentIndex}`;
+  answered=false;
+  updateProgress();
+  updateNavActive();
+
+  // Si esta pregunta ya había sido respondida (ej. tras actualizar la página), restaurar el estado visual
+  if(answeredOption !== null && typeof answeredOption === 'number'){
+    showAnswerUI(q, answeredOption);
+    document.getElementById('scoreLive').textContent = `Aciertos: ${score}/${currentIndex+1}`;
+  }
+}
+
+function showAnswerUI(q, selectedIndex){
+  answered = true;
+  const opts = document.querySelectorAll('.option');
+  opts.forEach((btn,idx)=>{
+    btn.disabled = true;
+    if(idx===q.correct) btn.classList.add('correct');
+    if(idx===selectedIndex && selectedIndex!==q.correct) btn.classList.add('wrong');
+  });
+  const fb = document.getElementById('feedback');
+  const isCorrect = selectedIndex===q.correct;
+  if(isCorrect){
+    fb.className='show correct';
+    fb.innerHTML = `✅ ¡Correcto! ${q.es}`;
+  } else {
+    fb.className='show wrong';
+    fb.innerHTML = `❌ Incorrecto. ${q.es}`;
+  }
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function selectOption(i){
+  if(answered) return;
+  const q = questions[currentIndex];
+  answeredOption = i;
+  const isCorrect = i===q.correct;
+  if(isCorrect){
+    score++;
+    blockScores[q.block] = (blockScores[q.block]||0)+1;
+  }
+  showAnswerUI(q, i);
+  document.getElementById('scoreLive').textContent = `Aciertos: ${score}/${currentIndex+1}`;
+  saveState();
+}
+
+function updateProgress(){
+  const pct = (currentIndex/questions.length)*100;
+  document.getElementById('progressbar').style.width = pct+'%';
+}
+
+document.getElementById('nextBtn').onclick = ()=>{
+  currentIndex++;
+  answeredOption = null;
+  saveState();
+  renderQuestion();
+};
+
+function showResults(){
+  document.getElementById('quizCard').style.display='none';
+  const rs = document.getElementById('resultsScreen');
+  rs.style.display='block';
+  document.getElementById('progressbar').style.width='100%';
+  const pct = Math.round((score/questions.length)*100);
+  document.getElementById('finalScore').textContent = `${score} / ${questions.length} (${pct}%)`;
+  let msg='';
+  if(pct>=90) msg='¡Excelente dominio del tema! 🌟';
+  else if(pct>=75) msg='¡Muy buen trabajo! Sigue repasando los detalles finos.';
+  else if(pct>=60) msg='Vas bien, repasa los bloques con más errores.';
+  else msg='Sigue practicando, repasa cada bloque con calma.';
+  document.getElementById('finalMsg').textContent = msg;
+  const bd = document.getElementById('blockBreakdown');
+  bd.innerHTML='';
+  blockNames.forEach(name=>{
+    const got = blockScores[name]||0;
+    const total = blockTotals[name];
+    const row = document.createElement('div');
+    row.innerHTML = `<span>${name}</span><span>${got}/${total}</span>`;
+    bd.appendChild(row);
+  });
+  saveState();
+}
+
+async function resetQuiz(){
+  currentIndex=0; score=0; blockScores={}; answered=false; answeredOption=null;
+  await storageDelete(STORAGE_KEY);
+  renderQuestion();
+}
+
+document.getElementById('restartBtn').onclick = ()=> openConfirm();
+document.getElementById('restartBtn2').onclick = ()=> openConfirm();
+function openConfirm(){ document.getElementById('confirmModal').classList.add('show'); }
+document.getElementById('confirmYes').onclick = ()=>{ document.getElementById('confirmModal').classList.remove('show'); resetQuiz(); };
+document.getElementById('confirmNo').onclick = ()=>{ document.getElementById('confirmModal').classList.remove('show'); };
+
+// theme toggle
+const themeBtn = document.getElementById('themeToggle');
+function applyTheme(t){
+  document.body.setAttribute('data-theme', t);
+  themeBtn.textContent = t==='dark' ? '☀️ Modo claro' : '🌙 Modo oscuro';
+  localStorage.setItem('quizTheme', t);
+}
+themeBtn.onclick = ()=>{
+  const cur = document.body.getAttribute('data-theme');
+  applyTheme(cur==='dark' ? 'light' : 'dark');
+};
+(function initTheme(){
+  const saved = localStorage.getItem('quizTheme');
+  applyTheme(saved || 'light');
+})();
+
+// init
+async function init(){
+  buildNav();
+  await loadState();
+  renderQuestion();
+}
+init();
+</script>
+</body>
+</html>
